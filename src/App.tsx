@@ -1,5 +1,7 @@
 import { useState } from "react";
 import "./App.css";
+import { evalSafe } from "./utils/evalSafe";
+import _ from "lodash";
 
 type Task = {
   id: string;
@@ -20,13 +22,24 @@ function App() {
   // Todo: Implement safe eval later
   const executeCode = () => {
     try {
-      const result = eval(userCode); // TEMPORARY - we'll make this safe later
+      const allowedGlobals = {
+        Math,
+        JSON,
+        _: _,
+      };
+
+      const result = evalSafe(userCode, allowedGlobals);
       setTasks((prev) => [
         ...prev,
         { id: Date.now().toString(), code: userCode, result },
       ]);
     } catch (error) {
       console.error("Execution failed: ", error);
+      alert(
+        `Execution failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
